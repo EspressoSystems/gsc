@@ -58,6 +58,18 @@ jobs:
       - name: Move config into place
         run: cp config.yaml.template config.yaml
 
+      # Step 3: Update the Gramine manifest
+      - name: Update Gramine Manifest
+        run: |
+          MANIFEST_PATH="./nitro-espresso.manifest"
+          cat <<EOF >> $MANIFEST_PATH
+          [[sgx.trusted_files]]
+          uri = "file:/config/poster_config.json"
+          sha256 = "${{ env.POSTER_CONFIG_SHA256 }}"
+          EOF
+        env:
+          HASH: ${{ secrets.POSTER_CONFIG_SHA256 }}
+
       - name: Run gsc build
         run: ./gsc build sgx-poster ./nitro-espresso.manifest
 
@@ -80,4 +92,3 @@ jobs:
       - name: Push Docker
         if: github.event_name != 'pull_request'
         run: docker push ghcr.io/espressosystems/gsc-sgx-poster:${{ github.ref_name }}-${{ env.TIMESTAMP }}
-

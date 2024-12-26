@@ -58,20 +58,10 @@ jobs:
       - name: Move config into place
         run: cp config.yaml.template config.yaml
 
-      - name: Check HASH secret
-        run: |
-          if [ "${{ secrets.POSTER_CONFIG_SHA256 }}" == "a5bfeaa74a75afa98920ab3ace55a99106e8541648981e9acd18bc48afe95859" ]; then
-            echo "Hash matches the expected value"
-          else
-            echo "Hash does not match the expected value"
-          fi
-
       - name: Update Gramine Manifest
         run: |
           MANIFEST_PATH="./nitro-espresso.manifest"
           echo -e '[[sgx.trusted_files]]\nuri = "file:/config/poster_config.json"\nsha256 = "${{ secrets.POSTER_CONFIG_SHA256 }}"\n' >> $MANIFEST_PATH
-          echo "Updated Manifest File:"
-          cat $MANIFEST_PATH
         env:
           POSTER_CONFIG_SHA256: ${{ secrets.POSTER_CONFIG_SHA256 }}
 

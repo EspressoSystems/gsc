@@ -8,5 +8,3 @@ fs.mounts = [
     { path = "/home/user/.arbitrum/", uri = "file:/home/user/.arbitrum" }
 ]
 sgx.allowed_files = ["file:/home/user/.arbitrum", "file:/home/user/kzg10-aztec20-srs-1048584.bin", "file:/config"]
-[[sgx.trusted_files]]
-uri = "file:/config/poster_config.json"

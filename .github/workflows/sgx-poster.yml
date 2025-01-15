@@ -2,8 +2,6 @@ name: Build SGX Poster
 
 on:
   push:
-    branches:
-      - master
   pull_request:
   workflow_dispatch:
 
@@ -63,9 +61,9 @@ jobs:
       - name: Update Gramine Manifest
         run: |
           MANIFEST_PATH="./nitro-espresso.manifest"
-          echo -e '[[sgx.trusted_files]]\nuri = "file:/config/poster_config.json"\nsha256 = "${{ secrets.POSTER_CONFIG_SHA256 }}"\n' >> $MANIFEST_PATH
+          echo -e '[[sgx.trusted_files]]\nuri = "file:/config/poster_config.json"\nsha256 = "${{ env.POSTER_CONFIG_SHA256 }}"\n' >> $MANIFEST_PATH
         env:
-          POSTER_CONFIG_SHA256: ${{ secrets.POSTER_CONFIG_SHA256 }}
+          POSTER_CONFIG_SHA256: "2d14b373eb751b1c151b9920961dde58b8f5992b525049d38b83b4e3332e5691"
 
       - name: Run gsc build
         run: ./gsc build sgx-poster ./nitro-espresso.manifest

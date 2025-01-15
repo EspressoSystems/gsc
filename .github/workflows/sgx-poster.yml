@@ -63,7 +63,7 @@ jobs:
           MANIFEST_PATH="./nitro-espresso.manifest"
           echo -e '[[sgx.trusted_files]]\nuri = "file:/config/poster_config.json"\nsha256 = "${{ env.POSTER_CONFIG_SHA256 }}"\n' >> $MANIFEST_PATH
         env:
-          POSTER_CONFIG_SHA256: "2d14b373eb751b1c151b9920961dde58b8f5992b525049d38b83b4e3332e5691"
+          POSTER_CONFIG_SHA256: "bc8aaa570e04c414b6209f173076f9410a35d80fc29621c04c6845db3c24372e"
 
       - name: Run gsc build
         run: ./gsc build sgx-poster ./nitro-espresso.manifest

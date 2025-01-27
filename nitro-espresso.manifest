@@ -12,5 +12,5 @@ sgx.allowed_files = ["file:/home/user/.arbitrum"]
 uri = "file:/home/user/kzg10-aztec20-srs-1048584.bin"
 sha256 = "cded83e82e4b49fee4cb2e0f374f996954fe12548ad39100432ee493069ef09d"
 [[sgx.trusted_files]]
-uri = "file:/config/poster_config.json
+uri = "file:/config/poster_config.json"
 sha256 = "b4f178e6bd342b617bc90787ed2fbd7da2c9fc036f4e6a256c5da585d5607924"

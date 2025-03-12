@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define dummy data
-DUMMY_DATA="some-dummy-data"
+DUMMY_DATA="0x93616128705070474e0D8EdD11349c45668ac9DC000000000000000000000000"
 
 # Create the user_report_data structure with dummy data
 REPORT_DATA=$(printf "%-64s" "$DUMMY_DATA")

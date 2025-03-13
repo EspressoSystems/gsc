@@ -10,7 +10,7 @@ fs.mounts = [
 sgx.allowed_files = ["file:/home/user/.arbitrum"]
 [[sgx.trusted_files]]
 uri = "file:/home/user/kzg10-aztec20-srs-1048584.bin"
-sha256 = "4a8acbe0eb50cb87ad61f64caa0f590e26d248686452f7de6a52fb87abb66737"
+sha256 = "cded83e82e4b49fee4cb2e0f374f996954fe12548ad39100432ee493069ef09d"
 [[sgx.trusted_files]]
 uri = "file:/config/poster_config.json"
 sha256 = "ea10fb19eeda6a5b0a9852f04e2ed9a2554be87bd044ec11b20b243b6adf5efd"

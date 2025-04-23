@@ -7,10 +7,7 @@ fs.mounts = [
     { path = "/home/user/.arbitrum/", uri = "file:/home/user/.arbitrum"},
     { path = "/config/", uri = "file:/config"}
 ]
-sgx.allowed_files = ["file:/home/user/.arbitrum"]
+sgx.allowed_files = ["file:/home/user/.arbitrum", "file:/config/poster_config.json"]
 [[sgx.trusted_files]]
 uri = "file:/home/user/kzg10-aztec20-srs-1048584.bin"
 sha256 = "cded83e82e4b49fee4cb2e0f374f996954fe12548ad39100432ee493069ef09d"
-[[sgx.trusted_files]]
-uri = "file:/config/poster_config.json"
-sha256 = "6b5fa158bb6b3a3c813da6b4ffe160f0996a5a2fbfa7b48b7e25a995b63754b8"

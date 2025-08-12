@@ -98,8 +98,8 @@ prepare_contract_interaction() {
     # Create a summary file for easy reference
     cat > enclave_verification_summary.txt << EOF
 
-Enclave Verification Summary
-============================
+MR Enclave Summary
+===============================
 
 Timestamp: $(date)
 
@@ -124,6 +124,11 @@ Next Steps:
 EOF
 
     echo -e "${GREEN}✅ Summary saved to: enclave_verification_summary.txt${NC}"
+    
+    # Clean up intermediate files
+    echo -e "${YELLOW}🧹 Cleaning up intermediate files...${NC}"
+    rm -f "${REPORT_BIN}" "${REPORT_HEX}"
+    echo -e "${GREEN}✅ Intermediate files cleaned up${NC}"
 }
 
 # Function to display next steps

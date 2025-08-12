@@ -21,3 +21,6 @@ __pycache__
 *.manifest.sgx
 *.sig
 *.token
+
+/enclaves/report.txt
+/enclaves/enclave_verification_summary.txt

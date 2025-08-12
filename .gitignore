@@ -23,5 +23,7 @@ __pycache__
 *.token
 
 /enclaves/report.txt
+/enclaves/report.bin
+/enclaves/report.hex
 /enclaves/enclave_verification_summary.txt
 /enclaves/.env

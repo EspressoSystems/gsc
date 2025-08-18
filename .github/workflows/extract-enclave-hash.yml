@@ -1,0 +1,131 @@
+name: Extract SGX Enclave Hash
+
+on:
+  push:
+    branches:
+      - master
+      - enclave-hash
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ (github.ref == 'refs/heads/main' && github.run_number) || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  extract-enclave-hash:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Save Timestamp
+        run: echo "TIMESTAMP=$(date +%s)" >> ${GITHUB_ENV}
+
+      - uses: actions/checkout@v4
+        name: Checkout Repository
+
+      - uses: docker/setup-buildx-action@v3
+        name: Setup Docker BuildKit (buildx)
+
+      - name: Build SGX Poster Docker Image
+        run: |
+          docker build -t sgx-poster -f config/Dockerfile.sgx-poster config/
+
+      - name: Install GSC Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-docker python3-jinja2 python3-pip python3-tomli python3-tomli-w python3-yaml
+
+      - name: Setup GSC Configuration
+        run: cp config.yaml.template config.yaml
+
+      - name: Generate Temporary Signing Key
+        run: openssl genrsa -3 -out temp-enclave-key.pem 3072
+
+      - name: Run GSC Build (Graminize)
+        run: ./gsc build sgx-poster ./nitro-espresso.manifest
+
+      - name: Sign the Graminized Image
+        run: ./gsc sign-image sgx-poster temp-enclave-key.pem
+
+      - name: 🎯 Extract Enclave Hash (BEFORE STARTUP!)
+        run: |
+          echo "🔍 Extracting SGX enclave measurements from signed image..."
+          ./gsc info-image gsc-sgx-poster > enclave-measurements.txt
+          
+          echo "📋 Raw measurements:"
+          cat enclave-measurements.txt
+          
+          # Extract the enclave hash
+          ENCLAVE_HASH=$(grep -E '^mr_enclave' enclave-measurements.txt | cut -d'"' -f2)
+          SIGNER_HASH=$(grep -E '^mr_signer' enclave-measurements.txt | cut -d'"' -f2)
+          
+          echo ""
+          echo "🎯 **ENCLAVE MEASUREMENTS EXTRACTED:**"
+          echo "MRENCLAVE (Enclave Hash): $ENCLAVE_HASH"
+          echo "MRSIGNER (Signer Hash):   $SIGNER_HASH"
+          
+          # Save to environment for other steps
+          echo "ENCLAVE_HASH=$ENCLAVE_HASH" >> $GITHUB_ENV
+          echo "SIGNER_HASH=$SIGNER_HASH" >> $GITHUB_ENV
+          
+          # Validate hash format
+          if [ ${#ENCLAVE_HASH} -eq 64 ]; then
+            echo "Valid enclave hash extracted!"
+          else
+            echo "Invalid enclave hash format"
+            exit 1
+          fi
+
+      - name: Save Measurements as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: enclave-measurements-${{ env.TIMESTAMP }}
+          path: |
+            enclave-measurements.txt
+          retention-days: 30
+
+      - name: Generate Automation Script
+        run: |
+          cat > validate-enclave.sh << 'EOF'
+          #!/bin/bash
+          # SGX Enclave Hash Validation Script
+          # Generated on: $(date)
+          # Enclave Hash: ${{ env.ENCLAVE_HASH }}
+          
+          EXPECTED_ENCLAVE_HASH="${{ env.ENCLAVE_HASH }}"
+          
+          validate_enclave() {
+            local actual_hash="$1"
+            
+            if [ "$actual_hash" = "$EXPECTED_ENCLAVE_HASH" ]; then
+              echo "Enclave hash validated successfully!"
+              echo "Hash: $actual_hash"
+              return 0
+            else
+              echo "Enclave hash validation FAILED!"
+              echo "Expected: $EXPECTED_ENCLAVE_HASH"
+              echo "Actual:   $actual_hash"
+              return 1
+            fi
+          }
+          
+          # Usage: ./validate-enclave.sh <actual-hash>
+          if [ $# -eq 1 ]; then
+            validate_enclave "$1"
+          else
+            echo "Usage: $0 <enclave-hash>"
+            echo "Expected hash: $EXPECTED_ENCLAVE_HASH"
+          fi
+          EOF
+          
+          chmod +x validate-enclave.sh
+
+      - name: Save Validation Script as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-script-${{ env.TIMESTAMP }}
+          path: validate-enclave.sh
+          retention-days: 30
+
+      - name: Cleanup Temporary Key
+        if: always()
+        run: rm -f temp-enclave-key.pem

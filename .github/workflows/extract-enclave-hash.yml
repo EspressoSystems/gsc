@@ -25,9 +25,16 @@ jobs:
       - uses: docker/setup-buildx-action@v3
         name: Setup Docker BuildKit (buildx)
 
-      - name: Build SGX Poster Docker Image
+      - name: Use Pre-built SGX Poster Image
         run: |
-          docker build -t sgx-poster -f config/Dockerfile.sgx-poster config/
+          echo "🔍 Pulling pre-built sgx-poster image..."
+          if docker pull ghcr.io/espressosystems/sgx-poster:latest 2>/dev/null; then
+            echo "✅ Using existing pre-built image"
+            docker tag ghcr.io/espressosystems/sgx-poster:latest sgx-poster
+          else
+            echo "⚠️  Pre-built image not found, building locally"
+            docker build -t sgx-poster -f config/Dockerfile.sgx-poster config/
+          fi
 
       - name: Install GSC Dependencies
         run: |

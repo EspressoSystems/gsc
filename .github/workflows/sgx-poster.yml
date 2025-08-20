@@ -22,6 +22,8 @@ concurrency:
   group: ${{ github.workflow }}-${{ (github.ref == 'refs/heads/main' && github.run_number) || github.ref }}
   cancel-in-progress: true
 
+run-name: Build SGX Poster - ${{ inputs.base_image || 'Simple Build' }}
+
 jobs:
   sgx-poster:
     runs-on: ubuntu-24.04

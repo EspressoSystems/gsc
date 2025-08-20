@@ -5,6 +5,12 @@ on:
     branches:
       - master
   pull_request:
+  workflow_dispatch:
+    inputs:
+      base_image:
+        description: "Docker image to use for SGX poster"
+        required: false
+        type: string
   workflow_call:
     inputs:
       base_image:

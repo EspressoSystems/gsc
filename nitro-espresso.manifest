@@ -1,4 +1,7 @@
+loader.log_level = "all"
+loader.log_file = "/config/gramine_loader_logs.txt"
 sys.enable_extra_runtime_domain_names_conf = true
+sgx.thread_num = 10
 sgx.edmm_enable = true
 sgx.remote_attestation = "dcap"
 sgx.use_exinfo = true

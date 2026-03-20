@@ -94,9 +94,41 @@ jobs:
         if: github.event_name != 'pull_request'
         run: rm enclave-key.pem
 
+      - name: Extract Enclave Info
+        if: github.event_name != 'pull_request'
+        run: |
+          ./gsc info-image gsc-sgx-poster > /tmp/enclave_info.toml
+          python3 << 'PYEOF'
+          import tomllib, os
+          with open('/tmp/enclave_info.toml', 'rb') as f:
+              d = tomllib.load(f)
+          with open(os.environ['GITHUB_ENV'], 'a') as f:
+              f.write(f"MR_ENCLAVE={d['mr_enclave']}\n")
+              f.write(f"MR_SIGNER={d['mr_signer']}\n")
+              f.write(f"SIGN_DATE={d['date']}\n")
+              f.write(f"IS_DEBUG={str(d['debug']).lower()}\n")
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+              f.write("## SGX Enclave Info\n\n")
+              f.write("| Field | Value |\n")
+              f.write("| --- | --- |\n")
+              f.write(f"| MRENCLAVE | `{d['mr_enclave']}` |\n")
+              f.write(f"| MRSIGNER | `{d['mr_signer']}` |\n")
+              f.write(f"| Sign Date | {d['date']} |\n")
+              f.write(f"| Debug | {d['debug']} |\n")
+          PYEOF
+
       - name: Tag Docker
         if: github.event_name != 'pull_request'
-        run: docker tag gsc-sgx-poster ghcr.io/espressosystems/gsc-sgx-poster:${{ env.BASE_TAG }}
+        run: |
+          printf 'FROM gsc-sgx-poster\n' | docker build \
+            --label "sgx.mrenclave=${{ env.MR_ENCLAVE }}" \
+            --label "sgx.mrsigner=${{ env.MR_SIGNER }}" \
+            --label "sgx.sign_date=${{ env.SIGN_DATE }}" \
+            --label "sgx.debug=${{ env.IS_DEBUG }}" \
+            --label "base.image=${{ env.BASE_IMAGE }}" \
+            --label "base.tag=${{ env.BASE_TAG }}" \
+            -t ghcr.io/espressosystems/gsc-sgx-poster:${{ env.BASE_TAG }} \
+            -
 
       - name: Push Docker
         if: github.event_name != 'pull_request'
